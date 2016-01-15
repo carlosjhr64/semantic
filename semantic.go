@@ -1,7 +1,6 @@
 // Way to do semantic versioning.
 package semantic
 
-import "strings"
 import "github.com/carlosjhr64/to"
 
 type Versioner interface {
@@ -9,22 +8,10 @@ type Versioner interface {
 }
 
 type Version string
-
 const VERSION Version = "0.1.0.alpha"
 
-func MNBC(v string) (int, int, int, string) {
-  a := strings.SplitN(v, ".", 4)
-  if len(a) < 3 { panic("Version number not in m.n.b form.") }
-  major := to.Int(a[0])
-  minor := to.Int(a[1])
-  build := to.Int(a[2])
-  note := "" // or comment
-  if len(a) == 4 { note = a[3] }
-  return major, minor, build, note
-}
-
 func (v Version) MNBC() (int, int, int, string) {
-  return MNBC(string(v))
+  return to.Version(v).MNBC()
 }
 
 func Cmp(x, y Versioner) int {

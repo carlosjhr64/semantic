@@ -3,6 +3,7 @@ package semantic
 import "testing"
 import "fmt"
 import "strings"
+import "github.com/carlosjhr64/to"
 
 func TestMNBC(test *testing.T) {
   bad := test.Error
@@ -118,6 +119,12 @@ func TestLike(test *testing.T) {
 
   if Like(a, 1, 3) { bad("But 1.2 < 1.3.") }
   if !Like(a, 1, 1) { bad("But 1.2 > 1.1.") }
+}
+
+func TestVERSION(test *testing.T) {
+  bad := test.Error
+  if !Like(to.VERSION, 0, 2, 0) { bad("Unexpected to.VERSION") }
+  if VERSION.Cmp(Version("0.1.0")) != 0 { bad("Expected to be version 0.1.0") }
 }
 
 func TestPrint(test *testing.T) {
