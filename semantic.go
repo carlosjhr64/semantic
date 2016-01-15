@@ -10,7 +10,7 @@ type Versioner interface {
 
 type Version string
 
-var VERSION Version = "0.0.0.alpha"
+const VERSION = "0.0.0.alpha"
 
 func (v Version) MNBC() (int, int, int, string) {
   a := strings.SplitN(string(v), ".", 4)
