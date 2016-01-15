@@ -3,6 +3,7 @@ package semantic
 
 import "os"
 import "fmt"
+import "strings"
 import "github.com/carlosjhr64/to"
 
 type Versioner interface {
@@ -10,7 +11,7 @@ type Versioner interface {
 }
 
 type Version string
-const VERSION Version = "1.0.0.alpha"
+const VERSION Version = "1.1.0.alpha"
 
 func (v Version) MNBC() (int, int, int, string) {
   return to.Version(v).MNBC()
@@ -85,4 +86,16 @@ func MustLike(x Versioner, pkg string, i ...int) {
 
 func (x Version) MustLike(pkg string, i ...int) {
   MustLike(x, pkg, i...)
+}
+
+// semantic.Likes(to.VERSION, "to-0.2.0")
+func Likes(version interface{}, match string) {
+  pkgreq := strings.SplitN(match, "-", 2)
+  pkg, req := pkgreq[0], pkgreq[1]
+  w := strings.SplitN(req, ".", 3)
+  i := make([]int, len(w))
+  for j, n := range(w) { i[j] = to.Int(n) }
+  // Just use the genious fmt.Sprintf function to handle anything.
+  v := fmt.Sprintf("%v", version)
+  Version(v).MustLike(pkg, i...)
 }
