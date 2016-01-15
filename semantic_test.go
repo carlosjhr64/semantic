@@ -37,6 +37,8 @@ func TestCMP(test *testing.T) {
   b = Version("1.2.3")
   i = Cmp(a,b)
   if i!= 0 { bad("Cmp(a,b), 1.2.3<=>1.2.3") }
+  i = a.Cmp(b) // and the method version works
+  if i!= 0 { bad("Cmp(a,b), 1.2.3<=>1.2.3") }
 
   // Major
 
@@ -77,7 +79,8 @@ func TestLess(test *testing.T) {
   b = Version("1.2.3.beta")
 
   if Less(a,b) { bad("A. 1.2.3 == 1.2.3") }
-  if Less(a,a) { bad("B. 1.2.3 == 1.2.3") }
+  if Less(b,a) { bad("B. 1.2.3 == 1.2.3") }
+  if a.Less(b) { bad("B. 1.2.3 == 1.2.3") } // method version
 
   b = Version("2.2.3.beta")
   if !Less(a,b) { bad("C. a < b") }
@@ -107,6 +110,7 @@ func TestLike(test *testing.T) {
   if !Like(a,1) { bad("But a is 1!") }
   if !Like(a, 1, 2) { bad("But a is 1.2!") }
   if !Like(a, 1, 2, 3) { bad("But a is 1.2.3!") }
+  if !a.Like(1, 2, 3) { bad("But a is 1.2.3!") } // method version
 
   if !Like(a, 1, 2, 2) { bad("But 1.2.3 > 1.2.2.") }
   if Like(a, 1, 2, 4) { bad("But 1.2.3 < 1.2.4.") }

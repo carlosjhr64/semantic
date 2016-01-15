@@ -10,10 +10,10 @@ type Versioner interface {
 
 type Version string
 
-const VERSION = "0.0.0.alpha"
+const VERSION Version = "0.1.0.alpha"
 
-func (v Version) MNBC() (int, int, int, string) {
-  a := strings.SplitN(string(v), ".", 4)
+func MNBC(v string) (int, int, int, string) {
+  a := strings.SplitN(v, ".", 4)
   if len(a) < 3 { panic("Version number not in m.n.b form.") }
   major := to.Int(a[0])
   minor := to.Int(a[1])
@@ -21,6 +21,10 @@ func (v Version) MNBC() (int, int, int, string) {
   note := "" // or comment
   if len(a) == 4 { note = a[3] }
   return major, minor, build, note
+}
+
+func (v Version) MNBC() (int, int, int, string) {
+  return MNBC(string(v))
 }
 
 func Cmp(x, y Versioner) int {
@@ -35,8 +39,16 @@ func Cmp(x, y Versioner) int {
   return 0
 }
 
+func (x Version) Cmp(y Versioner) int {
+  return Cmp(x, y)
+}
+
 func Less(x, y Versioner) bool {
   return Cmp(x, y) < 0
+}
+
+func (x Version) Less(y Versioner) bool {
+  return Less(x, y)
 }
 
 func Like(x Versioner, i ...int) bool {
@@ -51,4 +63,8 @@ func Like(x Versioner, i ...int) bool {
     }
   }
   return true
+}
+
+func (x Version) Like(i ...int) bool {
+  return Like(x, i...)
 }
