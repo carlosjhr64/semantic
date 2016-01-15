@@ -1,6 +1,8 @@
 // Way to do semantic versioning.
 package semantic
 
+import "os"
+import "fmt"
 import "github.com/carlosjhr64/to"
 
 type Versioner interface {
@@ -8,7 +10,7 @@ type Versioner interface {
 }
 
 type Version string
-const VERSION Version = "0.1.0.alpha"
+const VERSION Version = "0.1.1.alpha"
 
 func (v Version) MNBC() (int, int, int, string) {
   return to.Version(v).MNBC()
@@ -54,4 +56,21 @@ func Like(x Versioner, i ...int) bool {
 
 func (x Version) Like(i ...int) bool {
   return Like(x, i...)
+}
+
+func MustLike(x Versioner, i ...int) {
+  if !Like(x, i...){
+    msg := fmt.Sprintf("Did not Like %T %s.", x, x)
+    if to.Panic {
+      panic(msg)
+    } else {
+      // Something was found in an unconfigured or misconfigured state.
+      fmt.Fprintln(os.Stderr, msg)
+      os.Exit(78)
+    }
+  }
+}
+
+func (x Version) MustLike(i ...int) {
+  MustLike(x, i...)
 }
