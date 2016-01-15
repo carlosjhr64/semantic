@@ -124,7 +124,7 @@ func TestLike(test *testing.T) {
 func TestVERSION(test *testing.T) {
   bad := test.Error
   if !Like(to.VERSION, 0, 2, 0) { bad("Unexpected to.VERSION") }
-  if VERSION.Cmp(Version("0.1.1")) != 0 { bad("Expected to be version 0.1.1") }
+  if VERSION.Cmp(Version("1.0.0")) != 0 { bad("Expected to be version 1.0.0") }
 }
 
 func TestPrint(test *testing.T) {

@@ -10,15 +10,13 @@ type Versioner interface {
 }
 
 type Version string
-const VERSION Version = "0.1.1.alpha"
+const VERSION Version = "1.0.0.alpha"
 
 func (v Version) MNBC() (int, int, int, string) {
   return to.Version(v).MNBC()
 }
 
-func Cmp(x, y Versioner) int {
-  mx, nx, bx, _ := x.MNBC()
-  my, ny, by, _ := y.MNBC()
+func cmp(mx, nx, bx, my, ny, by int) int {
   if mx > my { return  3 }
   if mx < my { return -3 }
   if nx > ny { return  2 }
@@ -26,6 +24,12 @@ func Cmp(x, y Versioner) int {
   if bx > by { return  1 }
   if bx < by { return -1 }
   return 0
+}
+
+func Cmp(x, y Versioner) int {
+  mx, nx, bx, _ := x.MNBC()
+  my, ny, by, _ := y.MNBC()
+  return cmp(mx, nx, bx, my, ny, by)
 }
 
 func (x Version) Cmp(y Versioner) int {
@@ -40,16 +44,21 @@ func (x Version) Less(y Versioner) bool {
   return Less(x, y)
 }
 
+var upgraded = false
 func Like(x Versioner, i ...int) bool {
+  upgraded = false
   m, n, b, _ := x.MNBC()
   j := len(i)
   if j<1 || j>3 { panic("Expected 1 to 3 arguments.") }
   if m != i[0] { return false }    // Major differences not Like eachother.
   if j > 1 {
     if n < i[1] { return false }   // Must contain minor differences.
-    if j > 2 && n == i[1] {
-      if b < i[2] { return false } // Must include some bug fix.
-    }
+    if n == i[1] {
+      if j > 2 {
+        if b < i[2] { return false } // Must include some bug fix.
+        if b > i[2] { upgraded = true }
+      }
+    }else{ upgraded = true}
   }
   return true
 }
@@ -58,9 +67,10 @@ func (x Version) Like(i ...int) bool {
   return Like(x, i...)
 }
 
-func MustLike(x Versioner, i ...int) {
+var Warn = true
+func MustLike(x Versioner, pkg string, i ...int) {
   if !Like(x, i...){
-    msg := fmt.Sprintf("Did not Like %T %s.", x, x)
+    msg := fmt.Sprintf("Did not Like %s %s.", pkg, x)
     if to.Panic {
       panic(msg)
     } else {
@@ -69,8 +79,10 @@ func MustLike(x Versioner, i ...int) {
       os.Exit(78)
     }
   }
+  // HACK!!! lol
+  if Warn && upgraded { fmt.Fprintf(os.Stderr, "Warning: %s upgraded.\n", pkg) }
 }
 
-func (x Version) MustLike(i ...int) {
-  MustLike(x, i...)
+func (x Version) MustLike(pkg string, i ...int) {
+  MustLike(x, pkg, i...)
 }
