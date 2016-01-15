@@ -133,3 +133,8 @@ func TestPrint(test *testing.T) {
   fmt.Println(strings.Split(string(version), "."))
   fmt.Printf("VERSION: %s\n", version)
 }
+
+func TestLikes(test *testing.T){
+  version := "1.2.3.20160115"
+  Likes(version, "pkg-1.2.3")
+}
