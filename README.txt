@@ -1,12 +1,12 @@
 package semantic // import "github.com/carlosjhr64/semantic"
 
 Way to do semantic versioning.
-const VERSION Version = "1.1.0.alpha"
+const VERSION string = "2.0.0"
+var Upgraded = false
 var Warn = true
-func Cmp(x, y Versioner) int
-func Less(x, y Versioner) bool
-func Like(x Versioner, i ...int) bool
-func Likes(version interface{}, match string)
-func MustLike(x Versioner, pkg string, i ...int)
-type Version string
-type Versioner interface { ... }
+func Cmp(x, y string) int
+func Less(x, y string) bool
+func Like(version string, i ...int) bool
+func Likes(version string, match string)
+func MNBC(version string) (int, int, int, string)
+func MustLike(version string, pkg string, i ...int)
