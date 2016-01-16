@@ -6,18 +6,26 @@ import "fmt"
 import "strings"
 import "github.com/carlosjhr64/to"
 
-type Versioner interface {
-  MNBC() (int, int, int, string)
+const VERSION string = "2.0.0"
+
+func mnbc(version *string) (int, int, int, string) {
+  a := strings.SplitN(*version, ".", 4)
+  if len(a) < 3 { to.Oops(version, "MNBC Version") }
+  major := to.Int(&a[0])
+  minor := to.Int(&a[1])
+  build := to.Int(&a[2])
+  comment := ""
+  if len(a) == 4 { comment = a[3] }
+  return major, minor, build, comment
 }
 
-type Version string
-const VERSION Version = "1.1.0.alpha"
-
-func (v Version) MNBC() (int, int, int, string) {
-  return to.Version(v).MNBC()
+func MNBC(version string) (int, int, int, string) {
+  return mnbc(&version)
 }
 
-func cmp(mx, nx, bx, my, ny, by int) int {
+func cmp(x, y *string) int {
+  mx, nx, bx, _ := mnbc(x)
+  my, ny, by, _ := mnbc(y)
   if mx > my { return  3 }
   if mx < my { return -3 }
   if nx > ny { return  2 }
@@ -27,51 +35,40 @@ func cmp(mx, nx, bx, my, ny, by int) int {
   return 0
 }
 
-func Cmp(x, y Versioner) int {
-  mx, nx, bx, _ := x.MNBC()
-  my, ny, by, _ := y.MNBC()
-  return cmp(mx, nx, bx, my, ny, by)
+func Cmp(x, y string) int {
+  return cmp(&x, &y)
 }
 
-func (x Version) Cmp(y Versioner) int {
-  return Cmp(x, y)
+func Less(x, y string) bool {
+  return cmp(&x, &y) < 0
 }
 
-func Less(x, y Versioner) bool {
-  return Cmp(x, y) < 0
-}
-
-func (x Version) Less(y Versioner) bool {
-  return Less(x, y)
-}
-
-var upgraded = false
-func Like(x Versioner, i ...int) bool {
-  upgraded = false
-  m, n, b, _ := x.MNBC()
+var Upgraded = false
+func like(version *string, i ...int) bool {
+  Upgraded = false
+  m, n, b, _ := mnbc(version)
   j := len(i)
-  if j<1 || j>3 { panic("Expected 1 to 3 arguments.") }
+  if j<1 || j>3 { panic("Expected 1 to 3 int.") }
   if m != i[0] { return false }    // Major differences not Like eachother.
   if j > 1 {
     if n < i[1] { return false }   // Must contain minor differences.
     if n == i[1] {
       if j > 2 {
         if b < i[2] { return false } // Must include some bug fix.
-        if b > i[2] { upgraded = true }
+        if b > i[2] { Upgraded = true }
       }
-    }else{ upgraded = true}
+    }else{ Upgraded = true}
   }
   return true
 }
-
-func (x Version) Like(i ...int) bool {
-  return Like(x, i...)
+func Like(version string, i ...int) bool {
+  return like(&version, i...)
 }
 
 var Warn = true
-func MustLike(x Versioner, pkg string, i ...int) {
-  if !Like(x, i...){
-    msg := fmt.Sprintf("Did not Like %s %s.", pkg, x)
+func mustLike(version *string, pkg *string, i ...int) {
+  if !like(version, i...){
+    msg := fmt.Sprintf("Did not Like %s %s.", *pkg, *version)
     if to.Panic {
       panic(msg)
     } else {
@@ -81,21 +78,18 @@ func MustLike(x Versioner, pkg string, i ...int) {
     }
   }
   // HACK!!! lol
-  if Warn && upgraded { fmt.Fprintf(os.Stderr, "Warning: %s upgraded.\n", pkg) }
+  if Warn && Upgraded { fmt.Fprintf(os.Stderr, "Warning: %s upgraded.\n", *pkg) }
 }
-
-func (x Version) MustLike(pkg string, i ...int) {
-  MustLike(x, pkg, i...)
+func MustLike(version string, pkg string, i ...int) {
+  mustLike(&version, &pkg, i...)
 }
 
 // semantic.Likes(to.VERSION, "to-0.2.0")
-func Likes(version interface{}, match string) {
+func Likes(version string, match string) {
   pkgreq := strings.SplitN(match, "-", 2)
   pkg, req := pkgreq[0], pkgreq[1]
   w := strings.SplitN(req, ".", 3)
   i := make([]int, len(w))
-  for j, n := range(w) { i[j] = to.Int(n) }
-  // Just use the genious fmt.Sprintf function to handle anything.
-  v := fmt.Sprintf("%v", version)
-  Version(v).MustLike(pkg, i...)
+  for j, n := range(w) { i[j] = to.Int(&n) }
+  mustLike(&version, &pkg, i...)
 }
